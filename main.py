@@ -1,27 +1,35 @@
-import os
-import time
 import socket
-from logging import *
-from dotenv import load_dotenv
+import datetime
+from time import sleep
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+from os import getenv, popen
+from dotenv import load_dotenv
 load_dotenv()
+
+from logging import *
 basicConfig(filename='info.log', level=INFO)
+hostname = socket.gethostname()
 
 def login():
     while True:
         opts = ChromeOptions()
         opts.add_argument("--headless")
         driver = Chrome(options=opts, service=Service(ChromeDriverManager().install()))
-        time.sleep(1)
+        sleep(1)
 
         el = lambda id : driver.find_element(By.ID, id)
         try:
             driver.get('https://go.ruc.edu.cn')
-            time.sleep(1)
+            sleep(1)
 
             # file = open("page_source.html", "w", encoding='utf-8')
             # file.write(driver.page_source)
@@ -35,11 +43,12 @@ def login():
             except:
                 el("username").clear()
                 el("password").clear()
-                el("username").send_keys(os.getenv("USERNAME"))
-                el("password").send_keys(os.getenv("PASSWORD"))
+                el("username").send_keys(getenv("USERNAME"))
+                el("password").send_keys(getenv("PASSWORD"))
                 el("login-account").click()
-                time.sleep(2)
                 info("Bit-Web OK!")
+                sleep(2)
+                driver.close()
                 break
             
         except:
@@ -47,20 +56,31 @@ def login():
             driver.close()
             continue
 
-def get_host_ip():
-    global _local_ip
-    s = None
-    try:
-        if not _local_ip:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.connect(('8.8.8.8', 80))
-            _local_ip = s.getsockname()[0]
-        return _local_ip
-    finally:
-        if s:
-            s.close()
+def send(content):
+    address = getenv("EMAIL")
 
+    message = MIMEMultipart("mixed")
+    message["From"] = message["To"] = address
+    message["Subject"] = hostname + "的 IPv4 地址已更新"
+    message.attach(MIMEText(content, "plain"))
 
-if __name__ == '__main__':
-    login()
+    with smtplib.SMTP_SSL(getenv("SERVER")) as server:
+        server.login(address, getenv("CODE"))
+        server.sendmail(address, address, message.as_string())
 
+login()
+ip = [a for a in popen('route print').readlines() if ' 0.0.0.0 ' in a][0].split()[-2]
+
+with open("current", "w+") as current:
+    old_ip = current.readline()
+if old_ip == ip:
+    info("本机的 IPv4 地址仍为" + ip)
+else:
+    with open("history", "a") as history:
+        history.write(old_ip)
+    with open("current", "w") as current:
+        current.write(ip)
+
+    content = f"更新至 {ip} \n于{datetime.datetime.now()}"
+    info(content)
+    send(content)

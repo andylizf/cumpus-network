@@ -1,2 +1,5 @@
 .env
 *.log
+current
+history
+__pycache__
