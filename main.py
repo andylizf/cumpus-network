@@ -1,26 +1,24 @@
 import os
 import time
-import random
 import socket
-from dotenv import load_dotenv
 from logging import *
-from selenium import webdriver
+from dotenv import load_dotenv
 from selenium.webdriver.common.by import By
-from selenium.webdriver import ChromeOptions
+from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 load_dotenv()
 basicConfig(filename='info.log', level=INFO)
 
-def login(usrname,passwd):
+def login():
     while True:
         opts = ChromeOptions()
         opts.add_argument("--headless")
-        driver = webdriver.Chrome(options=opts, service=Service(ChromeDriverManager().install()))
-        el = lambda id : driver.find_element(By.ID, id)
-
+        driver = Chrome(options=opts, service=Service(ChromeDriverManager().install()))
         time.sleep(1)
+
+        el = lambda id : driver.find_element(By.ID, id)
         try:
             driver.get('https://go.ruc.edu.cn')
             time.sleep(1)
@@ -33,21 +31,20 @@ def login(usrname,passwd):
                 if el("realname"):
                     info("Bit-Web still OK!")
                     driver.close()
-                    time.sleep(random.randint(3,7))
                     break
             except:
                 el("username").clear()
                 el("password").clear()
-                el("username").send_keys(usrname)
-                el("password").send_keys(passwd)
+                el("username").send_keys(os.getenv("USERNAME"))
+                el("password").send_keys(os.getenv("PASSWORD"))
                 el("login-account").click()
                 time.sleep(2)
                 info("Bit-Web OK!")
                 break
             
         except:
-            driver.close()
             warning("Bit-Web Failed!")
+            driver.close()
             continue
 
 def get_host_ip():
@@ -65,7 +62,5 @@ def get_host_ip():
 
 
 if __name__ == '__main__':
-    username = os.getenv("USERNAME")
-    password = os.getenv("PASSWORD")
+    login()
 
-    login(username, password)
