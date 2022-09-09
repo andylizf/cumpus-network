@@ -1,0 +1,1 @@
+SchTasks /Create /SC ONSTART /TN "Cumpus Network Connect" /TR "pythonw %~dp0main.py" 
