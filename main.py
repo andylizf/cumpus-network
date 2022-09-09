@@ -11,10 +11,10 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 load_dotenv()
-basicConfig(filename='info.log', encoding='utf-8', level=INFO)
+basicConfig(filename='info.log', level=INFO)
 
 def login(usrname,passwd):
-    while(1):
+    while True:
         opts = ChromeOptions()
         opts.add_argument("--headless")
         driver = webdriver.Chrome(options=opts, service=Service(ChromeDriverManager().install()))
