@@ -5,8 +5,6 @@ from pathlib import Path
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver import Chrome, ChromeOptions
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 
 import smtplib
 from email.mime.text import MIMEText
@@ -24,7 +22,7 @@ def login():
     while True:
         opts = ChromeOptions()
         opts.add_argument("--headless")
-        driver = Chrome(options=opts, service=Service(ChromeDriverManager().install()))
+        driver = Chrome(options=opts)
         sleep(1)
 
         el = lambda id : driver.find_element(By.ID, id)
