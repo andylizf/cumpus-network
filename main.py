@@ -10,15 +10,19 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-from os import getenv, popen
-from dotenv import load_dotenv
+from os import popen
 
-load_dotenv()
+from configparser import ConfigParser
+
+config = ConfigParser()
+config.read("config.ini")
 
 from logging import *
 
 basicConfig(filename="info.log", level=INFO)
 hostname = socket.gethostname()
+
+login_config = config["login"]
 
 
 def login():
@@ -45,8 +49,8 @@ def login():
             except:
                 el("username").clear()
                 el("password").clear()
-                el("username").send_keys(getenv("USERNAME"))
-                el("password").send_keys(getenv("PASSWORD"))
+                el("username").send_keys(login_config["username"])
+                el("password").send_keys(login_config["password"])
                 el("login-account").click()
                 info("Bit-Web OK!")
                 sleep(2)
@@ -59,16 +63,19 @@ def login():
             continue
 
 
+email_config = config["email"]
+
+
 def send(content):
-    address = getenv("EMAIL")
+    address = email_config["address"]
 
     message = MIMEMultipart("mixed")
     message["From"] = message["To"] = address
     message["Subject"] = hostname + "的 IPv4 地址已更新"
     message.attach(MIMEText(content, "plain"))
 
-    with smtplib.SMTP_SSL(getenv("SERVER")) as server:
-        server.login(address, getenv("CODE"))
+    with smtplib.SMTP_SSL(config("SERVER")) as server:
+        server.login(address, email_config["authCode"])
         server.sendmail(address, address, message.as_string())
 
 
