@@ -1,6 +1,7 @@
 import socket
 import datetime
 from time import sleep
+from pathlib import Path
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver import Chrome, ChromeOptions
@@ -71,15 +72,17 @@ def send(content):
 login()
 ip = [a for a in popen('route print').readlines() if ' 0.0.0.0 ' in a][0].split()[-2]
 
-with open("current", "w+") as current:
-    old_ip = current.readline()
+current = Path("current")
+old_ip = current.read_text() if current.exists() else current.touch()
+
+info("old_ip:" + old_ip)
+info("ip:" + ip)
 if old_ip == ip:
     info("本机的 IPv4 地址仍为" + ip)
 else:
-    with open("history", "a") as history:
-        history.write(old_ip)
-    with open("current", "w") as current:
-        current.write(ip)
+    if old_ip != None:
+        open("history", "a").write(old_ip)
+    current.write_text(ip)
 
     content = f"更新至 {ip} \n于{datetime.datetime.now()}"
     info(content)
