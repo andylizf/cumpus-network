@@ -3,3 +3,4 @@ config.ini
 current
 history
 __pycache__
+chromedriver.exe
