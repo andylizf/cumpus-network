@@ -35,7 +35,7 @@ def login():
             # file.close()
 
             try: 
-                if el("realname"):
+                if el("used-flow"):
                     info("Bit-Web still OK!")
                     driver.close()
                     break
