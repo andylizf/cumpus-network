@@ -1,16 +1,8 @@
 import socket
-import datetime
 from time import sleep
-from pathlib import Path
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver import Chrome, ChromeOptions
-
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
-from os import popen
 
 from configparser import ConfigParser
 
@@ -63,37 +55,4 @@ def login():
             continue
 
 
-email_config = config["email"]
-
-
-def send(content):
-    address = email_config["address"]
-
-    message = MIMEMultipart("mixed")
-    message["From"] = message["To"] = address
-    message["Subject"] = hostname + "的 IPv4 地址已更新"
-    message.attach(MIMEText(content, "plain"))
-
-    with smtplib.SMTP_SSL(config("SERVER")) as server:
-        server.login(address, email_config["authCode"])
-        server.sendmail(address, address, message.as_string())
-
-
 login()
-ip = [a for a in popen("route print").readlines() if " 0.0.0.0 " in a][0].split()[-2]
-
-current = Path("current")
-old_ip = current.read_text() if current.exists() else current.touch()
-
-info("old_ip:" + old_ip)
-info("ip:" + ip)
-if old_ip == ip:
-    info("本机的 IPv4 地址仍为" + ip)
-else:
-    if old_ip != None:
-        open("history", "a").write(old_ip)
-    current.write_text(ip)
-
-    content = f"更新至 {ip} \n于{datetime.datetime.now()}"
-    info(content)
-    send(content)
