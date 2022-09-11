@@ -1,5 +1,5 @@
 $name = 'Cumpus Network'
-$exe = (Get-Command pythonw).path
+$exe = (Get-Command python).path
 $params = 'main.py'
 $location = Get-Location
 
@@ -21,4 +21,7 @@ $trigger.Subscription =
 $trigger.Enabled = $True 
 $triggers += $trigger
 
-Register-ScheduledTask -TaskName $name -Action $action -Trigger $triggers
+$settings = New-ScheduledTaskSettingsSet
+$settings.Priority = 2
+
+Register-ScheduledTask -TaskName $name -Action $action -Settings $settings -Trigger $triggers -User "System"
