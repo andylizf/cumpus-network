@@ -12,11 +12,14 @@ from email.mime.multipart import MIMEMultipart
 
 from os import getenv, popen
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from logging import *
-basicConfig(filename='info.log', level=INFO)
+
+basicConfig(filename="info.log", level=INFO)
 hostname = socket.gethostname()
+
 
 def login():
     while True:
@@ -25,16 +28,16 @@ def login():
         driver = Chrome(options=opts)
         sleep(1)
 
-        el = lambda id : driver.find_element(By.ID, id)
+        el = lambda id: driver.find_element(By.ID, id)
         try:
-            driver.get('https://go.ruc.edu.cn')
+            driver.get("https://go.ruc.edu.cn")
             sleep(1)
 
             # file = open("page_source.html", "w", encoding='utf-8')
             # file.write(driver.page_source)
             # file.close()
 
-            try: 
+            try:
                 if el("used-flow"):
                     info("Bit-Web still OK!")
                     driver.close()
@@ -49,11 +52,12 @@ def login():
                 sleep(2)
                 driver.close()
                 break
-            
+
         except:
             warning("Bit-Web Failed!")
             driver.close()
             continue
+
 
 def send(content):
     address = getenv("EMAIL")
@@ -67,8 +71,9 @@ def send(content):
         server.login(address, getenv("CODE"))
         server.sendmail(address, address, message.as_string())
 
+
 login()
-ip = [a for a in popen('route print').readlines() if ' 0.0.0.0 ' in a][0].split()[-2]
+ip = [a for a in popen("route print").readlines() if " 0.0.0.0 " in a][0].split()[-2]
 
 current = Path("current")
 old_ip = current.read_text() if current.exists() else current.touch()
